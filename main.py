@@ -18,6 +18,8 @@ pygame.mixer.init()
 window = pygame.display.set_mode([800, 600])
 pygame.display.set_caption("PyWeek 29")
 
+pygame.time.set_timer(pygame.USEREVENT + 1, 100)
+
 #GAME SETUP STUFF
 menubuttons = pygame.sprite.Group()
 playbutton = ui.TextButton("Play", [400, 100], centered=True)
@@ -36,11 +38,14 @@ mouse = [0, 0]
 
 boat = entities.Boat([360, 280])
 pebbles = pygame.sprite.Group()
+ripples = pygame.sprite.Group()
 
 def newpebble():
     global mouse
     npebble = entities.Pebble(mouse)
     pebbles.add(npebble)
+    nripple = entities.Ripple(npebble.rect.center, 0.1, centered=True)
+    ripples.add(nripple)
 
 #GAME LOOP STUFF
 while running:
@@ -59,6 +64,8 @@ while running:
             elif screen == "game":
                 if pressed[0] == 1:
                     newpebble()
+        elif event.type == pygame.USEREVENT + 1:
+            ripples.update(boat, ripples)
 
     if screen == "menu":
         window.fill([255, 255, 255])
@@ -67,6 +74,7 @@ while running:
     if screen == "game":
         window.fill([57, 119, 155])
         pebbles.draw(window)
+        ripples.draw(window)
         boat.draw(window)
     pygame.display.flip()
 
