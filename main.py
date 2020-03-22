@@ -18,7 +18,8 @@ pygame.mixer.init()
 window = pygame.display.set_mode([800, 600])
 pygame.display.set_caption("PyWeek 29")
 
-pygame.time.set_timer(pygame.USEREVENT + 1, 100)
+pygame.time.set_timer(pygame.USEREVENT + 1, 40)
+pygame.time.set_timer(pygame.USEREVENT + 2, 500)
 
 #GAME SETUP STUFF
 menubuttons = pygame.sprite.Group()
@@ -35,17 +36,36 @@ running = True
 screen = "menu"
 prevscreen = "menu"
 mouse = [0, 0]
+addedripples = 0
+npebble = None
 
 boat = entities.Boat([360, 280])
 pebbles = pygame.sprite.Group()
 ripples = pygame.sprite.Group()
 
 def newpebble():
-    global mouse
+    global mouse, npebble, pebbles, ripples, addedripples
     npebble = entities.Pebble(mouse)
     pebbles.add(npebble)
-    nripple = entities.Ripple(npebble.rect.center, 0.1, centered=True)
+    nripple = entities.Ripple(npebble.rect.center, 0.01, 1, centered=True)
     ripples.add(nripple)
+    addedripples = 1
+    pygame.time.set_timer(pygame.USEREVENT + 2, 500)
+
+def addripples():
+    global npebble, addedripples, ripples
+    if addedripples == 1:
+        nripple = entities.Ripple(npebble.rect.center, 0.015, 0.5, centered=True)
+        ripples.add(nripple)
+        addedripples+=1
+    if addedripples == 2:
+        nripple = entities.Ripple(npebble.rect.center, 0.0175, 0.25, centered=True)
+        ripples.add(nripple)
+        addedripples += 1
+    if addedripples == 3:
+        nripple = entities.Ripple(npebble.rect.center, 0.02, 0.2, centered=True)
+        ripples.add(nripple)
+        addedripples = 0
 
 #GAME LOOP STUFF
 while running:
@@ -66,6 +86,10 @@ while running:
                     newpebble()
         elif event.type == pygame.USEREVENT + 1:
             ripples.update(boat, ripples)
+            pebbles.update()
+        elif event.type == pygame.USEREVENT + 2:
+            if not addedripples == 0:
+                addripples()
 
     if screen == "menu":
         window.fill([255, 255, 255])
@@ -73,9 +97,17 @@ while running:
         backbutton.draw(window)
     if screen == "game":
         window.fill([57, 119, 155])
-        pebbles.draw(window)
         ripples.draw(window)
+        pebbles.draw(window)
         boat.draw(window)
+        hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
+        if len(hits) >= 0:
+            for ripple in hits:
+                ripple.kill()
+                boat.accelerate(ripple)
+                ripples.add(ripple)
+        boat.update()
+        print("VELOCITIES" + str([boat.xvelocity, boat.yvelocity]))
     pygame.display.flip()
 
 #CLOSE GAME STUFF
