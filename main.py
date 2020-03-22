@@ -1,6 +1,6 @@
 import pygame, pickle, pytmx
 from pygame.math import Vector2
-from game import ui, entities
+from game import ui, entities, maploader, objects
 
 """
 PyWeek 29 Game
@@ -39,6 +39,11 @@ prevscreen = "menu"
 mouse = [0, 0]
 addedripples = 0
 npebble = None
+level = 1
+
+alltiles = pygame.sprite.Group()
+walls = pygame.sprite.Group()
+alltiles, walls = maploader.loadmap(level)
 
 boat = entities.Boat([360, 280])
 pebbles = pygame.sprite.Group()
@@ -102,15 +107,17 @@ while running:
     if screen == "game":
         window.fill([57, 119, 155])
         ripples.draw(window)
+        alltiles.draw(window)
+        walls.draw(window)
         pebbles.draw(window)
         boat.draw(window)
         hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
-        boat.update()
+        boat.update(walls)
         if len(hits) > 0:
             for ripple in hits:
                 ripple.kill()
                 if not ripple.hit:
-                    boat.accelerate(ripple)
+                    boat.accelerate(ripple, walls)
                 ripples.add(ripple)
     pygame.display.flip()
 

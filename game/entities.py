@@ -41,21 +41,36 @@ class Boat(pygame.sprite.Sprite):
         self.coords = [self.rect.left, self.rect.top]
         self.mask = pygame.mask.from_surface(self.image)
         self.velocity = Vector2(0, 0)
-        """
-        self.rotation = random.randint(0, 359)
-        self.image = pygame.transform.rotate(self.originalimg, self.rotation)
-        oldcenter = self.rect.center
-        self.rect = self.image.get_rect()
-        self.rect.center = oldcenter
-        self.mask = pygame.mask.from_surface(self.image)
-        """
+        self.reachedgate = False
     def draw(self, surface):
         surface.blit(self.image, self.coords)
-    def accelerate(self, ripple):
-        self.velocity = Vector2(self.rect.centerx - ripple.rect.centerx, self.rect.centery - ripple.rect.centery).normalize() * (0.05*ripple.intensity)
-        self.coords += self.velocity
+    def checkwall(self, walls):
+        if pygame.sprite.spritecollide(self, walls, False, pygame.sprite.collide_mask):
+            for wall in pygame.sprite.spritecollide(self, walls, False, pygame.sprite.collide_mask):
+                hits = [False, False, False, False]
+                wall.kill()
+                hitpos = pygame.sprite.collide_mask(self, wall)
+                if hitpos[0] < 40:
+                    hits[0] = True
+                elif hitpos[0] > 40:
+                    hits[1] = True
+                if hitpos[1] < 20:
+                    hits[2] = True
+                elif hitpos[1] > 20:
+                    hits[3] = True
+                walls.add(wall)
+            return hits
+    def accelerate(self, ripple, walls):
+        self.velocity = Vector2(self.rect.centerx - ripple.rect.centerx, self.rect.centery - ripple.rect.centery).normalize() * (0.2*ripple.intensity)
+        walls = self.checkwall(walls)
+        if walls[0] and self.velocity[0] < 0:
+            pass
+        elif walls[1] and self.velocity[0] > 0:
+            pass
+        else:
+            pass
         self.rect.left, self.rect.top = self.coords
-    def update(self):
+    def update(self, walls):
         self.coords += self.velocity
         if self.coords[0] < 0:
             self.coords[0] = 0
@@ -67,6 +82,10 @@ class Boat(pygame.sprite.Sprite):
             self.coords[1] = 760
         self.rect.left, self.rect.top = self.coords
         self.velocity = self.velocity*(2/3)
+
+        if pygame.sprite.spritecollide(self, walls, False):
+            self.velocity = Vector2(0, 0)
+            print("in")
 
 class Ripple(pygame.sprite.Sprite):
     def __init__(self, pos, speed, radspeed, centered=False):
