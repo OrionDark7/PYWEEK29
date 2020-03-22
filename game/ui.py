@@ -67,9 +67,9 @@ class TextButton(pygame.sprite.Sprite):
             self.rect.left, self.rect.top = list(position)
         self.coords = [self.rect.left, self.rect.top]
     def draw(self, surface): #Single Draw
-        surface.blit(self.image, self.pos)
+        surface.blit(self.image, self.coords)
     def update(self, surface): #Group Draw
-        surface.blit(self.image, self.pos)
+        surface.blit(self.image, self.coords)
     def click(self, coords):
         clicked = False
         if self.rect.collidepoint(coords):

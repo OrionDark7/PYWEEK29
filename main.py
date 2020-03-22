@@ -1,5 +1,5 @@
-import pygame
-from game import ui
+import pygame, pickle
+from game import ui, entities
 
 """
 PyWeek 29 Game
@@ -16,7 +16,7 @@ pygame.mixer.init()
 
 #PYGAME SETUP STUFF
 window = pygame.display.set_mode([800, 600])
-pygame.display.set_caption("PYWEEK 29")
+pygame.display.set_caption("PyWeek 29")
 
 #GAME SETUP STUFF
 menubuttons = pygame.sprite.Group()
@@ -25,10 +25,22 @@ quitbutton = ui.TextButton("Quit", [400, 150], centered=True)
 menubuttons.add(playbutton)
 menubuttons.add(quitbutton)
 
+ui.Color([255, 0, 0])
+backbutton = ui.TextButton("Back", [10, 10])
+
 #DEFINITION STUFF
 running = True
 screen = "menu"
+prevscreen = "menu"
 mouse = [0, 0]
+
+boat = entities.Boat([360, 280])
+pebbles = pygame.sprite.Group()
+
+def newpebble():
+    global mouse
+    npebble = entities.Pebble(mouse)
+    pebbles.add(npebble)
 
 #GAME LOOP STUFF
 while running:
@@ -39,16 +51,23 @@ while running:
             pressed = pygame.mouse.get_pressed()
             mouse = list(pygame.mouse.get_pos())
             if screen == "menu":
-                if playbutton.click(mouse):
-                    screen = "game"
-                elif quitbutton.click(mouse):
-                    running = False
+                if pressed[0] == 1:
+                    if playbutton.click(mouse):
+                        screen = "game"
+                    elif quitbutton.click(mouse):
+                        running = False
+            elif screen == "game":
+                if pressed[0] == 1:
+                    newpebble()
 
     if screen == "menu":
         window.fill([255, 255, 255])
         menubuttons.draw(window)
+        backbutton.draw(window)
     if screen == "game":
-        window.fill([255, 255, 255])
+        window.fill([57, 119, 155])
+        pebbles.draw(window)
+        boat.draw(window)
     pygame.display.flip()
 
 #CLOSE GAME STUFF
