@@ -6,4 +6,4 @@ See LICENSE file
 Current File: /GAME/__INIT__.PY
 """
 
-__all__ = ["ui", "entities"]
+__all__ = ["ui", "entities", "maploader", "objects"]

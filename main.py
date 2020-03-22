@@ -1,4 +1,4 @@
-import pygame, pickle
+import pygame, pickle, pytmx
 from pygame.math import Vector2
 from game import ui, entities
 
@@ -39,11 +39,6 @@ prevscreen = "menu"
 mouse = [0, 0]
 addedripples = 0
 npebble = None
-cannondown = False
-cannonx = 0
-cannon = pygame.surface.Surface([20, 40])
-opposite = 0
-
 
 boat = entities.Boat([360, 280])
 pebbles = pygame.sprite.Group()
@@ -106,11 +101,6 @@ while running:
         backbutton.draw(window)
     if screen == "game":
         window.fill([57, 119, 155])
-        if not cannondown:
-            window.blit(cannon, [mouse[0]-10, 550])
-        if cannondown:
-            window.blit(cannon, [cannonx, 550])
-            opposite = 0
         ripples.draw(window)
         pebbles.draw(window)
         boat.draw(window)
@@ -122,8 +112,6 @@ while running:
                 if not ripple.hit:
                     boat.accelerate(ripple)
                 ripples.add(ripple)
-        #print(boat.xvelocity)
-        print("VEL"+str([boat.xvelocity, boat.yvelocity]))
     pygame.display.flip()
 
 #CLOSE GAME STUFF

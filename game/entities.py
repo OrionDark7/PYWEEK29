@@ -1,4 +1,5 @@
 import pygame, random
+from pygame.math import Vector2
 
 """
 PyWeek 29 Game
@@ -39,8 +40,7 @@ class Boat(pygame.sprite.Sprite):
         self.rect.left, self.rect.top = list(pos)
         self.coords = [self.rect.left, self.rect.top]
         self.mask = pygame.mask.from_surface(self.image)
-        self.xvelocity = 0
-        self.yvelocity = 0
+        self.velocity = Vector2(0, 0)
         """
         self.rotation = random.randint(0, 359)
         self.image = pygame.transform.rotate(self.originalimg, self.rotation)
@@ -52,46 +52,21 @@ class Boat(pygame.sprite.Sprite):
     def draw(self, surface):
         surface.blit(self.image, self.coords)
     def accelerate(self, ripple):
-        collision = pygame.sprite.collide_mask(self, ripple)
-        #print("COLLISION" + str(collision))
-        #print("EDGES" + str([self.rect.left, self.rect.right, self.rect.top, self.rect.bottom]))
-        #print("EDGES" + str([ripple.rect.left, ripple.rect.right, ripple.rect.top, ripple.rect.bottom]))
-        if collision[0] > 40:
-            self.xvelocity -= ripple.intensity*0.9
-            #print("in2")
-        elif collision[0] < 40:
-            self.xvelocity += ripple.intensity*0.9
-            #print("in1")
-        if collision[1] > 20:
-            self.yvelocity -= ripple.intensity*0.9
-            #print("in4")
-        elif collision[1] < 20:
-            self.yvelocity += ripple.intensity*0.9
-            #print("in3")
-        self.rect.left += self.xvelocity
-        self.rect.top += self.yvelocity
-        self.coords = self.rect.left, self.rect.top
-        ripple.hit = True
+        self.velocity = Vector2(self.rect.centerx - ripple.rect.centerx, self.rect.centery - ripple.rect.centery).normalize() * (0.05*ripple.intensity)
+        self.coords += self.velocity
+        self.rect.left, self.rect.top = self.coords
     def update(self):
-        self.coords = self.rect.left, self.rect.top
-        if self.xvelocity < 0:
-            self.xvelocity += 0.01
-        elif self.xvelocity > 0:
-            self.xvelocity -= 0.01
-        if self.yvelocity < 0:
-            self.yvelocity += 0.01
-        elif self.yvelocity > 0:
-            self.yvelocity -= 0.01
-
-        if not self.xvelocity == 0:
-            if (self.xvelocity < 0.1 and self.xvelocity > -0.1):
-                self.xvelocity = 0
-        if not self.yvelocity == 0:
-            if (self.yvelocity < 0.1 and self.yvelocity > -0.1):
-                self.yvelocity = 0
-
-        self.rect.left += self.xvelocity
-        self.rect.top += self.yvelocity
+        self.coords += self.velocity
+        if self.coords[0] < 0:
+            self.coords[0] = 0
+        if self.coords[0] > 720:
+            self.coords[0] = 720
+        if self.coords[1] < 0:
+            self.coords[1] = 0
+        if self.coords[1] > 760:
+            self.coords[1] = 760
+        self.rect.left, self.rect.top = self.coords
+        self.velocity = self.velocity*(2/3)
 
 class Ripple(pygame.sprite.Sprite):
     def __init__(self, pos, speed, radspeed, centered=False):
@@ -115,9 +90,9 @@ class Ripple(pygame.sprite.Sprite):
         self.image = getimage("/objects/ripple.png")
         self.image = pygame.transform.scale(self.image, [int(self.radius*2), int(self.radius*2)])
         try:
-            pygame.draw.ellipse(self.image, [84+int(171*(1-self.intensity)), 171+int(84*(1-self.intensity)), 191+int(64*(1-self.intensity))], [0, 0, int(self.radius*2), int(self.radius*2)], 1)
+            pygame.draw.ellipse(self.image, [84-int(27*(1-self.intensity)), 171-int(52*(1-self.intensity)), 191-int(36*(1-self.intensity))], [0, 0, int(self.radius*2), int(self.radius*2)], int(self.intensity*8)+1)
         except:
-            pygame.draw.ellipse(self.image, [84+int(171*(1-self.intensity)), 171+int(84*(1-self.intensity)), 191+int(64*(1-self.intensity))], [0, 0, int(self.radius * 2), int(self.radius * 2)],
+            pygame.draw.ellipse(self.image, [84-int(27*(1-self.intensity)), 171-int(52*(1-self.intensity)), 191-int(36*(1-self.intensity))], [0, 0, int(self.radius * 2), int(self.radius * 2)],
                                 1)
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()
