@@ -1,4 +1,5 @@
 import pygame, pickle
+from pygame.math import Vector2
 from game import ui, entities
 
 """
@@ -38,6 +39,11 @@ prevscreen = "menu"
 mouse = [0, 0]
 addedripples = 0
 npebble = None
+cannondown = False
+cannonx = 0
+cannon = pygame.surface.Surface([20, 40])
+opposite = 0
+
 
 boat = entities.Boat([360, 280])
 pebbles = pygame.sprite.Group()
@@ -72,6 +78,8 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.MOUSEMOTION:
+            mouse = list(pygame.mouse.get_pos())
         elif event.type == pygame.MOUSEBUTTONDOWN:
             pressed = pygame.mouse.get_pressed()
             mouse = list(pygame.mouse.get_pos())
@@ -91,23 +99,31 @@ while running:
             if not addedripples == 0:
                 addripples()
 
+
     if screen == "menu":
         window.fill([255, 255, 255])
         menubuttons.draw(window)
         backbutton.draw(window)
     if screen == "game":
         window.fill([57, 119, 155])
+        if not cannondown:
+            window.blit(cannon, [mouse[0]-10, 550])
+        if cannondown:
+            window.blit(cannon, [cannonx, 550])
+            opposite = 0
         ripples.draw(window)
         pebbles.draw(window)
         boat.draw(window)
         hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
-        if len(hits) >= 0:
+        boat.update()
+        if len(hits) > 0:
             for ripple in hits:
                 ripple.kill()
-                boat.accelerate(ripple)
+                if not ripple.hit:
+                    boat.accelerate(ripple)
                 ripples.add(ripple)
-        boat.update()
-        print("VELOCITIES" + str([boat.xvelocity, boat.yvelocity]))
+        #print(boat.xvelocity)
+        print("VEL"+str([boat.xvelocity, boat.yvelocity]))
     pygame.display.flip()
 
 #CLOSE GAME STUFF
