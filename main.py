@@ -112,13 +112,19 @@ while running:
         pebbles.draw(window)
         boat.draw(window)
         hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
+        walls.update(boat)
         boat.update(walls)
+        alltiles.update(boat)
+        if boat.reachedgate:
+            screen = "menu"
+            boat.reachedgate=False
         if len(hits) > 0:
             for ripple in hits:
                 ripple.kill()
                 if not ripple.hit:
                     boat.accelerate(ripple, walls)
                 ripples.add(ripple)
+    print(boat.velocity)
     pygame.display.flip()
 
 #CLOSE GAME STUFF
