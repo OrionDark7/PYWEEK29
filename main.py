@@ -28,6 +28,14 @@ playbutton = ui.TextButton("Play", [400, 100], centered=True)
 quitbutton = ui.TextButton("Quit", [400, 150], centered=True)
 menubuttons.add(playbutton)
 menubuttons.add(quitbutton)
+completebuttons = pygame.sprite.Group()
+ui.Color("w")
+nextbutton = ui.TextButton("Next Level", [305, 275])
+replaybutton = ui.TextButton("Replay Level", [305, 300])
+returnbutton = ui.TextButton("Return to Menu", [305, 325])
+completebuttons.add(nextbutton)
+completebuttons.add(replaybutton)
+completebuttons.add(returnbutton)
 
 ui.Color([255, 0, 0])
 backbutton = ui.TextButton("Back", [10, 10])
@@ -40,14 +48,34 @@ mouse = [0, 0]
 addedripples = 0
 npebble = None
 level = 1
+coins = 0
+collected: int = 0
+startpos = [Vector2(400, 300), Vector2(100, 100)]
 
 alltiles = pygame.sprite.Group()
 walls = pygame.sprite.Group()
-alltiles, walls = maploader.loadmap(level)
+floatys = pygame.sprite.Group()
+coingrp = pygame.sprite.Group()
+drains = pygame.sprite.Group()
+alltiles, walls, floatys, coingrp = maploader.loadmap(level)
 
 boat = entities.Boat([360, 280])
 pebbles = pygame.sprite.Group()
 ripples = pygame.sprite.Group()
+
+def loadLevel(level):
+    global boat, alltiles, walls, startpos, collected, coingrp
+    alltiles = pygame.sprite.Group()
+    walls = pygame.sprite.Group()
+    floatys = pygame.sprite.Group()
+    coingrp = pygame.sprite.Group()
+    drains = pygame.sprite.Group()
+    alltiles, walls, floatys, coingrp = maploader.loadmap(level)
+    boat.rect.center = startpos[level-1]
+    boat.coords = boat.rect.left, boat.rect.top
+    boat.reachedgate = False
+    collected = 0
+    boat.collected = 0
 
 def newpebble():
     global mouse, npebble, pebbles, ripples, addedripples
@@ -73,6 +101,23 @@ def addripples():
         ripples.add(nripple)
         addedripples = 0
 
+def levelcomplete():
+    surface = pygame.surface.Surface([200, 150])
+    surface.set_alpha(128)
+    window.blit(surface, [300, 225])
+    ui.SetFont("w", 36)
+    ui.Text("Level " + str(level) + " Complete!", window, [305, 235])
+    completebuttons.draw(window)
+
+def infobox():
+    global boat, collected, window
+    surface = pygame.surface.Surface([150, 75])
+    surface.set_alpha(127)
+    window.blit(surface, [10, 515])
+    ui.SetFont("w", 24)
+    ui.Text("health - " + str(boat.health), window, [15, 525])
+    ui.Text("coins collected - " + str(collected), window, [15, 550])
+
 #GAME LOOP STUFF
 while running:
     for event in pygame.event.get():
@@ -89,6 +134,18 @@ while running:
                         screen = "game"
                     elif quitbutton.click(mouse):
                         running = False
+            if screen == "level complete":
+                if pressed[0] == 1:
+                    if nextbutton.click(mouse):
+                        screen = "game"
+                        level += 1
+                        loadLevel(level)
+                    if replaybutton.click(mouse):
+                        screen = "game"
+                        loadLevel(level)
+                    if returnbutton.click(mouse):
+                        screen = "menu"
+                        level = 1
             elif screen == "game":
                 if pressed[0] == 1:
                     newpebble()
@@ -103,8 +160,32 @@ while running:
     if screen == "menu":
         window.fill([255, 255, 255])
         menubuttons.draw(window)
-        backbutton.draw(window)
     if screen == "game":
+        collected = boat.collected
+        window.fill([57, 119, 155])
+        ripples.draw(window)
+        alltiles.draw(window)
+        walls.draw(window)
+        pebbles.draw(window)
+        boat.draw(window)
+        infobox()
+        hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
+        walls.update(boat)
+        coingrp.update(boat)
+        floatys.update(boat)
+        boat.update(walls, startpos)
+        alltiles.update(boat)
+        if boat.reachedgate:
+            screen = "level complete"
+            boat.reachedgate=False
+            coins += collected
+        if len(hits) > 0:
+            for ripple in hits:
+                ripple.kill()
+                if not ripple.hit:
+                    boat.accelerate(ripple, walls)
+                ripples.add(ripple)
+    if screen == "level complete":
         window.fill([57, 119, 155])
         ripples.draw(window)
         alltiles.draw(window)
@@ -113,18 +194,17 @@ while running:
         boat.draw(window)
         hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
         walls.update(boat)
-        boat.update(walls)
+        floatys.update(boat)
+        boat.update(walls, startpos)
         alltiles.update(boat)
-        if boat.reachedgate:
-            screen = "menu"
-            boat.reachedgate=False
         if len(hits) > 0:
             for ripple in hits:
                 ripple.kill()
                 if not ripple.hit:
                     boat.accelerate(ripple, walls)
                 ripples.add(ripple)
-    print(boat.velocity)
+        levelcomplete()
+
     pygame.display.flip()
 
 #CLOSE GAME STUFF

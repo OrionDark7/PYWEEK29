@@ -42,6 +42,8 @@ class Boat(pygame.sprite.Sprite):
         self.mask = pygame.mask.from_surface(self.image)
         self.velocity = Vector2(0, 0)
         self.reachedgate = False
+        self.health = 100
+        self.collected = 0
     def draw(self, surface):
         surface.blit(self.image, self.coords)
     def checkwall(self, walls):
@@ -73,18 +75,30 @@ class Boat(pygame.sprite.Sprite):
                 walls.add(wall)
         return hits
     def accelerate(self, ripple, walls):
-        self.velocity = Vector2(self.rect.centerx - ripple.rect.centerx, self.rect.centery - ripple.rect.centery).normalize() * (0.2*ripple.intensity)
+        try:
+            self.velocity = Vector2(self.rect.centerx - ripple.rect.centerx, self.rect.centery - ripple.rect.centery).normalize() * (0.4*ripple.intensity)
+        except:
+            pass
         self.rect.left, self.rect.top = self.coords
-    def update(self, walls):
+    def update(self, walls, startpos):
         self.coords += self.velocity
+
         if self.coords[0] < 0:
             self.coords[0] = 0
+            if self.coords[0] < -80:
+                self.coords = startpos
         if self.coords[0] > 720:
             self.coords[0] = 720
+            if self.coords[0] > 800:
+                self.coords = startpos
         if self.coords[1] < 0:
             self.coords[1] = 0
-        if self.coords[1] > 760:
-            self.coords[1] = 760
+            if self.coords[0] < -40:
+                self.coords = startpos
+        if self.coords[1] > 560:
+            self.coords[1] = 560
+            if self.coords[0] > 600:
+                self.coords = startpos
         self.rect.left, self.rect.top = self.coords
         self.velocity = self.velocity*(2/3)
 
