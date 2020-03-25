@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.2" tiledversion="1.3.1" name="tileset" tilewidth="120" tileheight="40" tilecount="10" columns="0">
+<tileset version="1.2" tiledversion="1.3.1" name="tileset" tilewidth="120" tileheight="80" tilecount="13" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <properties>
@@ -60,5 +60,17 @@
    <property name="type" value="shark"/>
   </properties>
   <image width="40" height="40" source="../images/objects/shark.png"/>
+ </tile>
+ <tile id="10">
+  <image width="40" height="80" source="../images/objects/waterfall-horiz.png"/>
+ </tile>
+ <tile id="11">
+  <image width="80" height="40" source="../images/objects/waterfall-vert.png"/>
+ </tile>
+ <tile id="12">
+  <properties>
+   <property name="type" value="ground-2"/>
+  </properties>
+  <image width="40" height="41" source="../images/objects/wall2.png"/>
  </tile>
 </tileset>

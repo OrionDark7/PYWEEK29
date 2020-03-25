@@ -1,4 +1,4 @@
-import pygame, random
+import pygame, random, math
 from pygame.math import Vector2
 
 """
@@ -11,24 +11,52 @@ Current File: /GAME/ENTITIES.PY
 
 pygame.init()
 
+def distance(x1, x2, x3, x4):
+    return math.sqrt(abs( ( (x2-x1)^2 ) + ( (x2-x1)^2 ) ))
+
 def getimage(path):
     img = pygame.image.load("./resources/images/"+path)
     return img
 
 #OBJECT DEFINITION STUFF
 class Pebble(pygame.sprite.Sprite):
-    def __init__(self, pos):
+    def __init__(self, pos, goto):
+        global window
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.surface.Surface([4, 4])
+        self.image = getimage("objects/ripple.png")
         self.image.fill([128, 128, 128])
+        self.image = pygame.transform.scale(self.image, [6, 6])
+        self.originalimage = self.image
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = list(pos)
-        self.coords = [self.rect.left, self.rect.top]
-        self.moving = False #Temp, set to true when throwing
-    def update(self):
-        self.coords = self.rect.left, self.rect.top
-        if not self.moving:
-            self.kill()
+        self.coords = Vector2(self.rect.left, self.rect.top)
+        self.goto = list(goto)
+        self.originaldist = distance(self.rect.centerx, self.goto[0], self.rect.centery, self.goto[1])
+        self.speed = 22.5 + self.originaldist
+        self.dist = self.originaldist
+        self.velocity = Vector2(self.rect.centerx - self.goto[0], self.rect.centery - self.goto[1]).normalize() * -self.speed
+        self.radius, self.angle = self.velocity.as_polar()
+        self.image = pygame.transform.rotate(self.image, int(-self.angle))
+    def update(self, boat):
+        self.rect.left, self.rect.top = self.coords
+        self.speed -= 0.5
+        self.dist = distance(self.rect.centerx, self.goto[0], self.rect.centery, self.goto[1])
+        try:
+            self.velocity = Vector2(self.rect.centerx - self.goto[0], self.rect.centery - self.goto[1]).normalize() * -self.speed
+        except:
+            pass
+        self.radius, self.angle = self.velocity.as_polar()
+        self.image.blit(pygame.transform.rotate(self.originalimage, int(-self.angle)), [0, 0])
+        self.rect = self.image.get_rect()
+        self.rect.left, self.rect.top = self.coords
+        self.coords += self.velocity
+        if self.rect.centerx > self.goto[0] - 15 and self.rect.centerx < self.goto[0] + 15:
+            if self.rect.centery > self.goto[1] - 15 and self.rect.centery < self.goto[1] + 15:
+                self.rect.centerx, self.rect.centery = self.goto
+                self.velocity = 0
+                boat.startripples = True
+                boat.startripplesat = self.rect.center
+                self.kill()
 
 class Boat(pygame.sprite.Sprite):
     def __init__(self, pos):
@@ -45,6 +73,7 @@ class Boat(pygame.sprite.Sprite):
         self.health = 100
         self.collected = 0
         self.hitrock = False
+        self.startripples = False
     def draw(self, surface):
         surface.blit(self.image, self.coords)
     def accelerate(self, ripple, walls):

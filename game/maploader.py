@@ -64,8 +64,11 @@ def loadmap(level):
     for x in range(20):
         for y in range(15):
             properties = data.get_tile_properties(x, y, 0)
-            if properties["type"] == "ground":
-                obj = objects.Wall([x*40, y*40])
+            if properties["type"] == "ground" or properties["type"] == "ground-2":
+                if properties["type"] == "ground":
+                    obj = objects.Wall([x*40, y*40], 1)
+                elif properties["type"] == "ground-2":
+                    obj = objects.Wall([x*40, y*40], 2)
                 walls.add(obj)
                 alltiles.add(obj)
             if properties["type"] == "gate":

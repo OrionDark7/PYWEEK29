@@ -47,9 +47,10 @@ prevscreen = "menu"
 mouse = [0, 0]
 addedripples = 0
 npebble = None
-level = 2
+level = 1
 coins = 0
 collected: int = 0
+startclicked = False
 startpos = [Vector2(400, 300), Vector2(100, 100), Vector2(500, 80)]
 
 alltiles = pygame.sprite.Group()
@@ -72,7 +73,7 @@ def loadLevel(level):
     coingrp = pygame.sprite.Group()
     drains = pygame.sprite.Group()
     sharks = pygame.sprite.Group()
-    alltiles, walls, floatys, coingrp, drains = maploader.loadmap(level)
+    alltiles, walls, floatys, coingrp, drains, sharks = maploader.loadmap(level)
     boat.rect.center = startpos[level-1]
     boat.coords = boat.rect.left, boat.rect.top
     boat.reachedgate = False
@@ -82,11 +83,9 @@ def loadLevel(level):
 
 def newpebble():
     global mouse, npebble, pebbles, ripples, addedripples
-    npebble = entities.Pebble(mouse)
+    npebble = entities.Pebble([400, 596], mouse)
     pebbles.add(npebble)
-    nripple = entities.Ripple(npebble.rect.center, 0.01, 1, centered=True)
-    ripples.add(nripple)
-    addedripples = 1
+    addedripples = 0
     pygame.time.set_timer(pygame.USEREVENT + 2, 500)
 
 def addripples():
@@ -121,6 +120,9 @@ def infobox():
     ui.Text("health - " + str(boat.health) + "%", window, [15, 520])
     ui.Text("coins collected - " + str(collected), window, [15, 555])
 
+def pebbletrail():
+    pass
+
 #GAME LOOP STUFF
 while running:
     for event in pygame.event.get():
@@ -135,6 +137,7 @@ while running:
                 if pressed[0] == 1:
                     if playbutton.click(mouse):
                         screen = "game"
+                        startclicked = True
                     elif quitbutton.click(mouse):
                         running = False
             if screen == "level complete":
@@ -149,12 +152,24 @@ while running:
                     if returnbutton.click(mouse):
                         screen = "menu"
                         level = 1
-            elif screen == "game":
+            elif screen == "game" and not screen == "menu":
                 if pressed[0] == 1:
-                    newpebble()
+                    if not startclicked:
+                        newpebble()
+                    else:
+                        startclicked = False
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
         elif event.type == pygame.USEREVENT + 1:
             ripples.update(boat, ripples)
-            pebbles.update()
+            pebbles.update(boat)
+            if boat.startripples:
+                boat.startripples = False
+                nripple = entities.Ripple(boat.startripplesat, 0.01, 1, centered=True)
+                ripples.add(nripple)
+                addedripples = 1
+                pygame.time.set_timer(pygame.USEREVENT + 2, 500)
         elif event.type == pygame.USEREVENT + 2:
             if not addedripples == 0:
                 addripples()

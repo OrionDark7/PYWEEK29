@@ -16,9 +16,12 @@ def getimage(path):
     return img
 
 class Wall(pygame.sprite.Sprite):
-    def __init__(self, position):
+    def __init__(self, position, type):
         pygame.sprite.Sprite.__init__(self)
-        self.image = getimage("/objects/wall.png")
+        if type == 2:
+            self.image = getimage("/objects/wall2.png")
+        else:
+            self.image = getimage("/objects/wall.png")
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = list(position)
         self.mask = pygame.mask.from_surface(self.image)
@@ -41,7 +44,6 @@ class Wall(pygame.sprite.Sprite):
                 self.hit = True
             else:
                 boat.velocity = Vector2(0, 0)
-            print("hit")
         else:
             self.hit = False
 
@@ -66,7 +68,6 @@ class Drain(pygame.sprite.Sprite):
         if not linkedto == None:
             self.linkpos = list(linkedto)
             self.linkpos = [40*self.linkpos[0], 40*self.linkpos[1]]
-        print(linkedto)
     def update(self, boat):
         if self.rect.colliderect(boat.rect) and not self.linkpos == None:
             boat.coords = self.linkpos
@@ -123,7 +124,6 @@ class Shark(pygame.sprite.Sprite):
         self.goingto = self.goto
         self.startpos = self.coords
     def update(self, boat):
-        print(self.goingto)
         self.coords = self.rect.left, self.rect.top
         if self.rect.left < self.goingto[0]:
             self.rect.left += 1
