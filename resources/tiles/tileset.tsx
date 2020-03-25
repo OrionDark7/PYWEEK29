@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.2" tiledversion="1.3.1" name="tileset" tilewidth="120" tileheight="40" tilecount="6" columns="0">
+<tileset version="1.2" tiledversion="1.3.1" name="tileset" tilewidth="120" tileheight="40" tilecount="8" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <properties>
@@ -36,5 +36,17 @@
    <property name="type" value="rock"/>
   </properties>
   <image width="40" height="40" source="../images/objects/rock.png"/>
+ </tile>
+ <tile id="6">
+  <properties>
+   <property name="type" value="drain"/>
+  </properties>
+  <image width="120" height="40" source="../images/objects/drain.png"/>
+ </tile>
+ <tile id="7">
+  <properties>
+   <property name="type" value="buoy"/>
+  </properties>
+  <image width="40" height="40" source="../images/objects/buoy.png"/>
  </tile>
 </tileset>

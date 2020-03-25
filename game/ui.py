@@ -11,7 +11,7 @@ Current File: /GAME/UI.PY
 pygame.init()
 
 #VARIABLE DEFINITION STUFF
-font = pygame.font.Font(None, 24)
+font = pygame.font.Font("./resources/font/eurof55.ttf", 24)
 fontcolor = [0, 0, 0]
 
 #FUNCTION DEFENITION STUFF
@@ -31,12 +31,12 @@ def Color(color):
 
 def Size(size):
     global font
-    font = pygame.font.Font(None, int(size))
+    font = pygame.font.Font("./resources/font/eurof55.ttf", int(size))
 
 def SetFont(color, size):
     global fontcolor, font
 
-    font = pygame.font.Font(None, int(size))
+    font = pygame.font.Font("./resources/font/eurof55.ttf", int(size))
 
     if type(color) == str:
         if color == "b":

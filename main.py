@@ -50,32 +50,33 @@ npebble = None
 level = 1
 coins = 0
 collected: int = 0
-startpos = [Vector2(400, 300), Vector2(100, 100)]
+startpos = [Vector2(400, 300), Vector2(100, 100), Vector2(500, 80)]
 
 alltiles = pygame.sprite.Group()
 walls = pygame.sprite.Group()
 floatys = pygame.sprite.Group()
 coingrp = pygame.sprite.Group()
 drains = pygame.sprite.Group()
-alltiles, walls, floatys, coingrp = maploader.loadmap(level)
+alltiles, walls, floatys, coingrp, drains = maploader.loadmap(level)
 
 boat = entities.Boat([360, 280])
 pebbles = pygame.sprite.Group()
 ripples = pygame.sprite.Group()
 
 def loadLevel(level):
-    global boat, alltiles, walls, startpos, collected, coingrp
+    global boat, alltiles, walls, floatys, drains, startpos, collected, coingrp
     alltiles = pygame.sprite.Group()
     walls = pygame.sprite.Group()
     floatys = pygame.sprite.Group()
     coingrp = pygame.sprite.Group()
     drains = pygame.sprite.Group()
-    alltiles, walls, floatys, coingrp = maploader.loadmap(level)
+    alltiles, walls, floatys, coingrp, drains = maploader.loadmap(level)
     boat.rect.center = startpos[level-1]
     boat.coords = boat.rect.left, boat.rect.top
     boat.reachedgate = False
     collected = 0
     boat.collected = 0
+    boat.health = 100
 
 def newpebble():
     global mouse, npebble, pebbles, ripples, addedripples
@@ -105,18 +106,18 @@ def levelcomplete():
     surface = pygame.surface.Surface([200, 150])
     surface.set_alpha(128)
     window.blit(surface, [300, 225])
-    ui.SetFont("w", 36)
-    ui.Text("Level " + str(level) + " Complete!", window, [305, 235])
+    ui.SetFont("w", 28)
+    ui.Text("Level " + str(level) + " Complete!", window, [305, 225])
     completebuttons.draw(window)
 
 def infobox():
     global boat, collected, window
-    surface = pygame.surface.Surface([150, 75])
+    surface = pygame.surface.Surface([220, 75])
     surface.set_alpha(127)
     window.blit(surface, [10, 515])
-    ui.SetFont("w", 24)
-    ui.Text("health - " + str(boat.health), window, [15, 525])
-    ui.Text("coins collected - " + str(collected), window, [15, 550])
+    ui.SetFont("w", 30)
+    ui.Text("health - " + str(boat.health) + "%", window, [15, 520])
+    ui.Text("coins collected - " + str(collected), window, [15, 555])
 
 #GAME LOOP STUFF
 while running:
@@ -170,16 +171,16 @@ while running:
         boat.draw(window)
         infobox()
         hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
-        walls.update(boat)
         coingrp.update(boat)
         floatys.update(boat)
-        boat.update(walls, startpos)
+        drains.update(boat)
+        boat.update(walls, startpos[level-1])
         alltiles.update(boat)
         if boat.reachedgate:
             screen = "level complete"
             boat.reachedgate=False
             coins += collected
-        if len(hits) > 0:
+        if len(hits) > 0 and not boat.hitrock:
             for ripple in hits:
                 ripple.kill()
                 if not ripple.hit:
@@ -193,9 +194,9 @@ while running:
         pebbles.draw(window)
         boat.draw(window)
         hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
-        walls.update(boat)
         floatys.update(boat)
-        boat.update(walls, startpos)
+        drains.update(boat)
+        boat.update(walls, startpos[level-1])
         alltiles.update(boat)
         if len(hits) > 0:
             for ripple in hits:

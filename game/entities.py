@@ -44,41 +44,15 @@ class Boat(pygame.sprite.Sprite):
         self.reachedgate = False
         self.health = 100
         self.collected = 0
+        self.hitrock = False
     def draw(self, surface):
         surface.blit(self.image, self.coords)
-    def checkwall(self, walls):
-        hits = [False, False, False, False]
-        if pygame.sprite.spritecollide(self, walls, False, pygame.sprite.collide_mask):
-            for wall in pygame.sprite.spritecollide(self, walls, False, pygame.sprite.collide_mask):
-                wall.kill()
-                hitpos = pygame.sprite.collide_mask(self, wall)
-                print(hitpos)
-                if hitpos[0] == 0 and not hitpos[1] == 0 and not hitpos[1] == 40:
-                    hits[0] = True
-                elif hitpos[0] == 80 and not hitpos[1] == 0 and not hitpos[1] == 40:
-                    hits[1] = True
-                elif hitpos[0] == 0 and hitpos[1] == 0 or hitpos[1] == 40:
-                    hits[0] = True
-
-                    print(1)
-                    if hitpos[1] == 0:
-                        print(2)
-                        hits[2] = True
-                    elif hitpos[1] == 40:
-                        hits[3] = True
-                elif hitpos[0] == 80 and hitpos[1] == 0 or hitpos[1] == 40:
-                    hits[1] = True
-                    if hitpos[1] == 0:
-                        hits[2] = True
-                    elif hitpos[1] == 40:
-                        hits[3] = True
-                walls.add(wall)
-        return hits
     def accelerate(self, ripple, walls):
         try:
             self.velocity = Vector2(self.rect.centerx - ripple.rect.centerx, self.rect.centery - ripple.rect.centery).normalize() * (0.4*ripple.intensity)
         except:
             pass
+        ripple.effect = False
         self.rect.left, self.rect.top = self.coords
     def update(self, walls, startpos):
         self.coords += self.velocity
@@ -101,6 +75,10 @@ class Boat(pygame.sprite.Sprite):
                 self.coords = startpos
         self.rect.left, self.rect.top = self.coords
         self.velocity = self.velocity*(2/3)
+
+        if pygame.sprite.spritecollide(self, walls, False):
+            self.coords = startpos[0] - 40, startpos[1] - 20
+            self.health = 100
 
         if self.velocity[0] < 0.05 and self.velocity[0] > -0.05: #Yeah just not worth it at this point.
             self.velocity[0] = 0

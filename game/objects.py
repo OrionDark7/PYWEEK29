@@ -23,6 +23,7 @@ class Wall(pygame.sprite.Sprite):
         self.rect.left, self.rect.top = list(position)
         self.mask = pygame.mask.from_surface(self.image)
         self.mask.fill()
+        self.hit = False
     def update(self, boat):
         if self.rect.colliderect(boat.rect):
             if boat.velocity[0] < 0:
@@ -33,9 +34,16 @@ class Wall(pygame.sprite.Sprite):
                 boat.rect.top = self.rect.bottom
             elif boat.velocity[1] > 0:
                 boat.rect.bottom = self.rect.top
-            oldvelocity = boat.velocity
-            boat.velocity = Vector2(0,0)
-            boat.velocity -= oldvelocity*4
+            if self.hit == False:
+                oldvelocity = boat.velocity
+                boat.velocity = Vector2(0,0)
+                boat.velocity -= oldvelocity*4
+                self.hit = True
+            else:
+                boat.velocity = Vector2(0, 0)
+            print("hit")
+        else:
+            self.hit = False
 
 
 class Gate(pygame.sprite.Sprite):
@@ -47,6 +55,21 @@ class Gate(pygame.sprite.Sprite):
     def update(self, boat):
         if self.rect.colliderect(boat.rect):
             boat.reachedgate = True
+
+class Drain(pygame.sprite.Sprite):
+    def __init__(self, position, linkedto):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = getimage("/objects/drain.png")
+        self.rect = self.image.get_rect()
+        self.rect.left, self.rect.top = list(position)
+        self.linkpos = None  # A gate you can't return through.
+        if not linkedto == None:
+            self.linkpos = list(linkedto)
+            self.linkpos = [40*self.linkpos[0], 40*self.linkpos[1]]
+        print(linkedto)
+    def update(self, boat):
+        if self.rect.colliderect(boat.rect) and not self.linkpos == None:
+            boat.coords = self.linkpos
 
 class Floaty(pygame.sprite.Sprite):
     def __init__(self, position, type):
@@ -70,9 +93,13 @@ class Floaty(pygame.sprite.Sprite):
                 boat.rect.bottom = self.rect.top
             oldvelocity = boat.velocity
             boat.velocity = Vector2(0, 0)
-            boat.velocity -= oldvelocity * 2
+            boat.velocity -= oldvelocity * 4
+            if self.type == "rock" and self.hit:
+                oldvelocity /= 4
+                boat.velocity = -oldvelocity
             if self.type == "rock" and not self.hit:
-                boat.health -= 10
+                boat.health -= 5
+                boat.hitrock = True
                 self.hit = True
             if self.type == "lilly" or self.type == "coin":
                 self.kill()
