@@ -47,7 +47,7 @@ prevscreen = "menu"
 mouse = [0, 0]
 addedripples = 0
 npebble = None
-level = 1
+level = 2
 coins = 0
 collected: int = 0
 startpos = [Vector2(400, 300), Vector2(100, 100), Vector2(500, 80)]
@@ -57,19 +57,21 @@ walls = pygame.sprite.Group()
 floatys = pygame.sprite.Group()
 coingrp = pygame.sprite.Group()
 drains = pygame.sprite.Group()
-alltiles, walls, floatys, coingrp, drains = maploader.loadmap(level)
+sharks = pygame.sprite.Group()
+alltiles, walls, floatys, coingrp, drains, sharks = maploader.loadmap(level)
 
 boat = entities.Boat([360, 280])
 pebbles = pygame.sprite.Group()
 ripples = pygame.sprite.Group()
 
 def loadLevel(level):
-    global boat, alltiles, walls, floatys, drains, startpos, collected, coingrp
+    global boat, alltiles, walls, floatys, drains, startpos, collected, coingrp, sharks
     alltiles = pygame.sprite.Group()
     walls = pygame.sprite.Group()
     floatys = pygame.sprite.Group()
     coingrp = pygame.sprite.Group()
     drains = pygame.sprite.Group()
+    sharks = pygame.sprite.Group()
     alltiles, walls, floatys, coingrp, drains = maploader.loadmap(level)
     boat.rect.center = startpos[level-1]
     boat.coords = boat.rect.left, boat.rect.top
@@ -168,12 +170,14 @@ while running:
         alltiles.draw(window)
         walls.draw(window)
         pebbles.draw(window)
+        sharks.draw(window)
         boat.draw(window)
         infobox()
         hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
         coingrp.update(boat)
         floatys.update(boat)
         drains.update(boat)
+        sharks.update(boat)
         boat.update(walls, startpos[level-1])
         alltiles.update(boat)
         if boat.reachedgate:
@@ -192,10 +196,12 @@ while running:
         alltiles.draw(window)
         walls.draw(window)
         pebbles.draw(window)
+        sharks.draw(window)
         boat.draw(window)
         hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
         floatys.update(boat)
         drains.update(boat)
+        sharks.update(boat)
         boat.update(walls, startpos[level-1])
         alltiles.update(boat)
         if len(hits) > 0:

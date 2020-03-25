@@ -109,3 +109,36 @@ class Floaty(pygame.sprite.Sprite):
                     boat.velocity = boat.velocity/2
         else:
             self.hit = False
+
+class Shark(pygame.sprite.Sprite):
+    def __init__(self, position, goto):
+        pygame.sprite.Sprite.__init__(self)
+        self.image = getimage("/objects/shark.png")
+        self.rect = self.image.get_rect()
+        self.rect.left, self.rect.top = list(position)
+        self.coords = self.rect.left, self.rect.top
+        self.goto = self.coords  # A non moving shark?
+        self.goto = list(goto)
+        self.goto = [40 * self.goto[0], 40 * self.goto[1]]
+        self.goingto = self.goto
+        self.startpos = self.coords
+    def update(self, boat):
+        print(self.goingto)
+        self.coords = self.rect.left, self.rect.top
+        if self.rect.left < self.goingto[0]:
+            self.rect.left += 1
+        elif self.rect.left > self.goingto[0]:
+            self.rect.left -= 1
+        if self.rect.top < self.goingto[1]:
+            self.rect.top += 1
+        elif self.rect.top > self.goingto[1]:
+            self.rect.top -= 1
+
+        if [self.rect.left, self.rect.top] == self.goingto:
+            if self.goingto == self.goto:
+                self.goingto = self.startpos
+            else:
+                self.goingto = self.goto
+
+        if self.rect.colliderect(boat.rect):
+            boat.health = 0

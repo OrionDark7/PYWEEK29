@@ -10,7 +10,7 @@ Current File: /GAME/MAPLOADER.PY
 """
 
 pygame.init()
-linelengths = [0, 0, 1]
+linelengths = [0, 1, 1]
 
 def strtolist(string):
     string = string.split(",")
@@ -26,7 +26,7 @@ def strtolist(string):
 def metaloader(level):
     meta = open("./resources/tiles/"+str(level)+"/meta.txt", "r")
 
-    data = {"drain":[]}
+    data = {"drain":[], "shark":[]}
     finished = False
     for i in range(linelengths[level-1]):
         line = meta.readline()
@@ -38,6 +38,12 @@ def metaloader(level):
             newcoordinates.append(strtolist(coordinates[0]))
             newcoordinates.append(strtolist(coordinates[1]))
             data["drain"].append(newcoordinates)
+        if line[1] == "^" and not finished:
+            coordinates = line[0], line[2]
+            newcoordinates = []
+            newcoordinates.append(strtolist(coordinates[0]))
+            newcoordinates.append(strtolist(coordinates[1]))
+            data["shark"].append(newcoordinates)
         elif finished:
             break
     return data
@@ -45,14 +51,16 @@ def metaloader(level):
 def loadmap(level):
     data = pytmx.TiledMap("./resources/tiles/"+str(level)+"/level.tmx")
     metadata = {}
-    if level == 3:
+    if linelengths[level-1] > 0:
         metadata = metaloader(level)
     print(metadata)
+    print("META")
     alltiles = pygame.sprite.Group()
     walls = pygame.sprite.Group()
     floatys = pygame.sprite.Group()
     coins = pygame.sprite.Group()
     drains = pygame.sprite.Group()
+    sharks = pygame.sprite.Group()
     for x in range(20):
         for y in range(15):
             properties = data.get_tile_properties(x, y, 0)
@@ -63,7 +71,7 @@ def loadmap(level):
             if properties["type"] == "gate":
                 obj = objects.Gate([x*40, y*40])
                 alltiles.add(obj)
-            if properties["type"] == "rock" or properties["type"] == "lilly":
+            if properties["type"] == "rock" or properties["type"] == "lilly" or properties["type"] == "grass":
                 obj = objects.Floaty([x * 40, y * 40], properties["type"])
                 floatys.add(obj)
                 alltiles.add(obj)
@@ -80,4 +88,14 @@ def loadmap(level):
                 obj = objects.Drain([x*40, y*40], linkedto)
                 alltiles.add(obj)
                 drains.add(obj)
-    return alltiles, walls, floatys, coins, drains
+            if properties["type"] == "shark":
+                goto = [x, y]
+                for entry in metadata["shark"]:
+                    if entry[0] == [x, y]:
+                        goto = entry[1]
+                        break
+                obj = objects.Shark([x*40, y*40], goto)
+                alltiles.add(obj)
+                sharks.add(obj)
+
+    return alltiles, walls, floatys, coins, drains, sharks

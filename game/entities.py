@@ -76,7 +76,7 @@ class Boat(pygame.sprite.Sprite):
         self.rect.left, self.rect.top = self.coords
         self.velocity = self.velocity*(2/3)
 
-        if pygame.sprite.spritecollide(self, walls, False):
+        if pygame.sprite.spritecollide(self, walls, False) or self.health <= 0:
             self.coords = startpos[0] - 40, startpos[1] - 20
             self.health = 100
 
