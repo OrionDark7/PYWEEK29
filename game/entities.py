@@ -11,6 +11,7 @@ Current File: /GAME/ENTITIES.PY
 
 pygame.init()
 
+#FUNCTION DEFINITION STUFF
 def getsfx(path):
     sfx = pygame.mixer.Sound("./resources/sfx/"+path)
     return sfx
@@ -22,11 +23,33 @@ def getimage(path):
     img = pygame.image.load("./resources/images/"+path)
     return img
 
-class Trail(pygame.sprite.Sprite):
-    def __init__(self):
-        pygame.sprite.Sprite.__init__(self)
-
 #OBJECT DEFINITION STUFF
+class Trail(pygame.sprite.Sprite):
+    def __init__(self, id, pebble):
+        pygame.sprite.Sprite.__init__(self)
+        self.id = int(id)
+        self.angle = pebble.angle
+        self.velocity = pebble.velocity
+        self.speed = pebble.speed
+        self.goto = pebble.goto
+        self.image = getimage("objects/ripple.png")
+        self.originalimage = self.image
+        self.rect = self.image.get_rect()
+        self.rect.left, self.rect.top = [400, 596]
+        self.image = pygame.transform.scale(self.originalimage, [int(abs(self.rect.width)), int(abs(self.rect.height))])
+    def update(self):
+        self.speed -= 0.5
+        self.image = pygame.transform.scale(self.originalimage, [int(abs(self.rect.width + self.velocity[0] * -self.speed)), int(abs(self.rect.height + self.velocity[1] * -self.speed))])
+        self.rect = self.image.get_rect()
+        self.rect.left, self.rect.top = [400, 600 - self.rect.height]
+        pygame.draw.polygon(self.image, [255, 255, 255], [[400, 598], [self.rect.width-4, 0], [self.rect.width, 4]], 0)
+        self.image.set_alpha(127)
+        if self.rect.centerx > self.goto[0] - 15 and self.rect.centerx < self.goto[0] + 15:
+            if self.rect.centery > self.goto[1] - 15 and self.rect.centery < self.goto[1] + 15:
+                self.rect.centerx, self.rect.centery = self.goto
+                self.velocity = 0
+                self.kill()
+
 class Pebble(pygame.sprite.Sprite):
     def __init__(self, pos, goto, id):
         global window

@@ -87,7 +87,9 @@ def newpebble():
     global mouse, npebble, pebbles, ripples, addedripples, pid
     pid += 1
     npebble = entities.Pebble([400, 596], mouse, pid)
+    #ntrail = entities.Trail(pid, npebble)
     pebbles.add(npebble)
+    #trails.add(ntrail)
     addedripples = 0
     pygame.time.set_timer(pygame.USEREVENT + 2, 500)
 
@@ -122,9 +124,6 @@ def infobox():
     ui.SetFont("w", 30)
     ui.Text("health - " + str(boat.health) + "%", window, [15, 520])
     ui.Text("coins collected - " + str(collected), window, [15, 555])
-
-def pebbletrail():
-    pass
 
 #GAME LOOP STUFF
 while running:
@@ -167,6 +166,7 @@ while running:
         elif event.type == pygame.USEREVENT + 1:
             ripples.update(boat, ripples)
             pebbles.update(boat)
+            trails.update()
             if boat.startripples:
                 boat.startripples = False
                 nripple = entities.Ripple(boat.startripplesat, 0.01, 1, centered=True)
@@ -182,6 +182,7 @@ while running:
         window.fill([255, 255, 255])
         menubuttons.draw(window)
     if screen == "game":
+        print(trails)
         collected = boat.collected
         window.fill([57, 119, 155])
         ripples.draw(window)
@@ -190,6 +191,7 @@ while running:
         pebbles.draw(window)
         sharks.draw(window)
         boat.draw(window)
+        trails.draw(window)
         infobox()
         hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
         coingrp.update(boat)
@@ -216,6 +218,7 @@ while running:
         pebbles.draw(window)
         sharks.draw(window)
         boat.draw(window)
+        trails.draw(window)
         hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
         floatys.update(boat)
         drains.update(boat)
