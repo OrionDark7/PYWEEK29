@@ -50,6 +50,7 @@ npebble = None
 level = 1
 coins = 0
 collected: int = 0
+pid = 0
 startclicked = False
 startpos = [Vector2(400, 300), Vector2(100, 100), Vector2(500, 80)]
 
@@ -64,6 +65,7 @@ alltiles, walls, floatys, coingrp, drains, sharks = maploader.loadmap(level)
 boat = entities.Boat([360, 280])
 pebbles = pygame.sprite.Group()
 ripples = pygame.sprite.Group()
+trails = pygame.sprite.Group()
 
 def loadLevel(level):
     global boat, alltiles, walls, floatys, drains, startpos, collected, coingrp, sharks
@@ -82,8 +84,9 @@ def loadLevel(level):
     boat.health = 100
 
 def newpebble():
-    global mouse, npebble, pebbles, ripples, addedripples
-    npebble = entities.Pebble([400, 596], mouse)
+    global mouse, npebble, pebbles, ripples, addedripples, pid
+    pid += 1
+    npebble = entities.Pebble([400, 596], mouse, pid)
     pebbles.add(npebble)
     addedripples = 0
     pygame.time.set_timer(pygame.USEREVENT + 2, 500)

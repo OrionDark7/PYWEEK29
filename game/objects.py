@@ -10,10 +10,15 @@ Current File: /GAME/OBJECTS.PY
 """
 
 pygame.init()
+pygame.mixer.init()
 
 def getimage(path):
     img = pygame.image.load("./resources/images/"+path)
     return img
+
+def getsfx(path):
+    sfx = pygame.mixer.Sound("./resources/sfx/"+path)
+    return sfx
 
 class Wall(pygame.sprite.Sprite):
     def __init__(self, position, type):
@@ -76,6 +81,9 @@ class Floaty(pygame.sprite.Sprite):
     def __init__(self, position, type):
         pygame.sprite.Sprite.__init__(self)
         self.image = getimage("/objects/"+str(type)+".png")
+        self.sfx = None
+        if type == "coin":
+            self.sfx = getsfx("coin.ogg")
         self.type = str(type)
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = list(position)
@@ -99,15 +107,17 @@ class Floaty(pygame.sprite.Sprite):
                 oldvelocity /= 4
                 boat.velocity = -oldvelocity
             if self.type == "rock" and not self.hit:
-                boat.health -= 5
-                boat.hitrock = True
+                boat.health -= 100
                 self.hit = True
+                boat.sfx.play()
             if self.type == "lilly" or self.type == "coin":
                 self.kill()
                 if self.type == "coin":
                     boat.collected += 1
+                    self.sfx.play()
                 elif self.type == "lilly":
                     boat.velocity = boat.velocity/2
+                    boat.health -= 5
         else:
             self.hit = False
 

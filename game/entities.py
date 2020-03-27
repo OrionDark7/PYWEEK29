@@ -11,6 +11,10 @@ Current File: /GAME/ENTITIES.PY
 
 pygame.init()
 
+def getsfx(path):
+    sfx = pygame.mixer.Sound("./resources/sfx/"+path)
+    return sfx
+
 def distance(x1, x2, x3, x4):
     return math.sqrt(abs( ( (x2-x1)^2 ) + ( (x2-x1)^2 ) ))
 
@@ -18,21 +22,27 @@ def getimage(path):
     img = pygame.image.load("./resources/images/"+path)
     return img
 
+class Trail(pygame.sprite.Sprite):
+    def __init__(self):
+        pygame.sprite.Sprite.__init__(self)
+
 #OBJECT DEFINITION STUFF
 class Pebble(pygame.sprite.Sprite):
-    def __init__(self, pos, goto):
+    def __init__(self, pos, goto, id):
         global window
         pygame.sprite.Sprite.__init__(self)
+        self.id = int(id)
         self.image = getimage("objects/ripple.png")
         self.image.fill([128, 128, 128])
         self.image = pygame.transform.scale(self.image, [6, 6])
         self.originalimage = self.image
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = list(pos)
+        self.sfx = getsfx("throw.ogg")
         self.coords = Vector2(self.rect.left, self.rect.top)
         self.goto = list(goto)
         self.originaldist = distance(self.rect.centerx, self.goto[0], self.rect.centery, self.goto[1])
-        self.speed = 22.5 + self.originaldist
+        self.speed = 22.5 + (self.originaldist*(1/4))
         self.dist = self.originaldist
         self.velocity = Vector2(self.rect.centerx - self.goto[0], self.rect.centery - self.goto[1]).normalize() * -self.speed
         self.radius, self.angle = self.velocity.as_polar()
@@ -54,8 +64,13 @@ class Pebble(pygame.sprite.Sprite):
             if self.rect.centery > self.goto[1] - 15 and self.rect.centery < self.goto[1] + 15:
                 self.rect.centerx, self.rect.centery = self.goto
                 self.velocity = 0
-                boat.startripples = True
-                boat.startripplesat = self.rect.center
+                if not self.rect.colliderect(boat.rect):
+                    boat.startripples = True
+                    boat.startripplesat = self.rect.center
+                    self.sfx.play()
+                else:
+                    boat.health -= 10
+                    boat.sfx.play()
                 self.kill()
 
 class Boat(pygame.sprite.Sprite):
@@ -63,8 +78,8 @@ class Boat(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = getimage("/objects/boat.png")
         self.originalimg = self.image
-        self.image.fill([237, 244, 161])
         self.rect = self.image.get_rect()
+        self.sfx = getsfx("hitboat.ogg")
         self.rect.left, self.rect.top = list(pos)
         self.coords = [self.rect.left, self.rect.top]
         self.mask = pygame.mask.from_surface(self.image)
@@ -139,7 +154,7 @@ class Ripple(pygame.sprite.Sprite):
         try:
             pygame.draw.ellipse(self.image, [84-int(27*(1-self.intensity)), 171-int(52*(1-self.intensity)), 191-int(36*(1-self.intensity))], [0, 0, int(self.radius*2), int(self.radius*2)], int(self.intensity*8)+1)
         except:
-            pygame.draw.ellipse(self.image, [84-int(27*(1-self.intensity)), 171-int(52*(1-self.intensity)), 191-int(36*(1-self.intensity))], [0, 0, int(self.radius * 2), int(self.radius * 2)],
+            pygame.draw.ellipse(self.image, [84-int(27*(1-self.intensity)), 171-int(52*(1-self.intensity)), 191-int(36*(1-self.intensity))], [0, 0, int(self.radius*2), int(self.radius*2)],
                                 1)
         self.mask = pygame.mask.from_surface(self.image)
         self.rect = self.image.get_rect()

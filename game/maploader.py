@@ -53,8 +53,6 @@ def loadmap(level):
     metadata = {}
     if linelengths[level-1] > 0:
         metadata = metaloader(level)
-    print(metadata)
-    print("META")
     alltiles = pygame.sprite.Group()
     walls = pygame.sprite.Group()
     floatys = pygame.sprite.Group()

@@ -23,7 +23,7 @@
   <properties>
    <property name="type" value="coin"/>
   </properties>
-  <image width="40" height="40" source="../images/objects/coin.png"/>
+  <image width="41" height="41" source="../images/objects/coin.png"/>
  </tile>
  <tile id="4">
   <properties>
@@ -35,7 +35,7 @@
   <properties>
    <property name="type" value="rock"/>
   </properties>
-  <image width="40" height="40" source="../images/objects/rock.png"/>
+  <image width="40" height="38" source="../images/objects/rock.png"/>
  </tile>
  <tile id="6">
   <properties>
