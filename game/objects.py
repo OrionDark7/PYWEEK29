@@ -25,15 +25,20 @@ class Wall(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         if type == 2:
             self.image = getimage("/objects/wall2.png")
+        elif type == 3:
+            self.image = getimage("/objects/wall3.png")
+        elif type == 4:
+            self.image = getimage("/objects/wall4.png")
+        elif type == 5:
+            self.image = getimage("/objects/wall5.png")
         else:
             self.image = getimage("/objects/wall.png")
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = list(position)
         self.mask = pygame.mask.from_surface(self.image)
-        self.mask.fill()
         self.hit = False
     def update(self, boat):
-        if self.rect.colliderect(boat.rect):
+        if pygame.sprite.collide_mask(self, boat):
             if boat.velocity[0] < 0:
                 boat.rect.left = self.rect.right
             elif boat.velocity[0] > 0:
@@ -47,6 +52,7 @@ class Wall(pygame.sprite.Sprite):
                 boat.velocity = Vector2(0,0)
                 boat.velocity -= oldvelocity*4
                 self.hit = True
+                boat.sfx.play()
             else:
                 boat.velocity = Vector2(0, 0)
         else:
@@ -59,14 +65,15 @@ class Gate(pygame.sprite.Sprite):
         self.image = getimage("/objects/gate.png")
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = list(position)
+        self.mask = pygame.mask.from_surface(self.image)
     def update(self, boat):
-        if self.rect.colliderect(boat.rect):
+        if pygame.sprite.collide_mask(self, boat):
             boat.reachedgate = True
 
 class Drain(pygame.sprite.Sprite):
-    def __init__(self, position, linkedto):
+    def __init__(self, position, linkedto, direction):
         pygame.sprite.Sprite.__init__(self)
-        self.image = getimage("/objects/drain.png")
+        self.image = getimage("/objects/drain"+direction+".png")
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = list(position)
         self.linkpos = None  # A gate you can't return through.
@@ -84,6 +91,8 @@ class Floaty(pygame.sprite.Sprite):
         self.sfx = None
         if type == "coin":
             self.sfx = getsfx("coin.ogg")
+        elif type == "ice":
+            self.sfx = getsfx("ice.ogg")
         self.type = str(type)
         self.rect = self.image.get_rect()
         self.rect.left, self.rect.top = list(position)
@@ -91,7 +100,7 @@ class Floaty(pygame.sprite.Sprite):
         self.mask.fill()
         self.hit = False
     def update(self, boat):
-        if self.rect.colliderect(boat.rect):
+        if self.rect.colliderect(boat.rect) and not self.type == "grass":
             if boat.velocity[0] < 0:
                 boat.rect.left = self.rect.right
             elif boat.velocity[0] > 0:
@@ -110,7 +119,7 @@ class Floaty(pygame.sprite.Sprite):
                 boat.health -= 100
                 self.hit = True
                 boat.sfx.play()
-            if self.type == "lilly" or self.type == "coin":
+            if self.type == "lilly" or self.type == "coin" or self.type == "ice":
                 self.kill()
                 if self.type == "coin":
                     boat.collected += 1
@@ -118,6 +127,10 @@ class Floaty(pygame.sprite.Sprite):
                 elif self.type == "lilly":
                     boat.velocity = boat.velocity/2
                     boat.health -= 5
+                elif self.type == "ice":
+                    boat.velocity = boat.velocity/2
+                    boat.health -= 15
+                    self.sfx.play()
         else:
             self.hit = False
 
@@ -152,3 +165,33 @@ class Shark(pygame.sprite.Sprite):
 
         if self.rect.colliderect(boat.rect):
             boat.health = 0
+
+class Waterfall(pygame.sprite.Sprite):
+    def __init__(self, position, direction):
+        pygame.sprite.Sprite.__init__(self)
+        self.velocitychange = 0
+        if direction == "up":
+            self.velocitychange = Vector2(0, -0.4)
+        elif direction == "down":
+            self.velocitychange = Vector2(0, 0.4)
+        elif direction == "left":
+            self.velocitychange = Vector2(-0.4, 0)
+        elif direction == "right":
+            self.velocitychange = Vector2(0.4, 0)
+        self.direction = direction
+        self.image = getimage("/objects/waterfall-"+str(direction)+".png")
+        self.rect = self.image.get_rect()
+        self.coords = Vector2(position[0], position[1])
+        self.rect.left, self.rect.top = self.coords
+        self.mask = pygame.mask.from_surface(self.image)
+    def update(self, boat):
+        if self.rect.colliderect(boat.rect):
+            if self.direction == "up":
+                self.velocitychange += Vector2(0, -0.01)
+            elif self.direction == "down":
+                self.velocitychange += Vector2(0, 0.01)
+            elif self.direction == "left":
+                self.velocitychange += Vector2(-0.01, 0)
+            elif self.direction == "right":
+                self.velocitychange += Vector2(0.01, 0)
+            boat.velocity += self.velocitychange

@@ -1,4 +1,4 @@
-import pygame, pickle, pytmx
+import pygame, pickle, pytmx, random
 from pygame.math import Vector2
 from game import ui, entities, maploader, objects
 
@@ -52,7 +52,10 @@ coins = 0
 collected: int = 0
 pid = 0
 startclicked = False
-startpos = [Vector2(400, 300), Vector2(100, 100), Vector2(500, 80)]
+startpos = [Vector2(140, 160), Vector2(100, 100), Vector2(100, 520), Vector2(400, 300), Vector2(140, 100), Vector2(140, 100), Vector2(500, 80), Vector2(100, 80), Vector2(120, 300), Vector2(180, 80), Vector2(100, 100), Vector2(700, 100), Vector2(100, 80), Vector2(100, 80), Vector2(400, 100)]
+grassmusic = ["./resources/music/sunsetsong.mp3", "./resources/music/rainywindow.mp3", "./resources/music/theend.mp3", "./resources/music/midsummerambient.mp3"]
+desertmusic = ["./resources/music/sunsetsong.mp3", "./resources/music/desertsong.mp3", "./resources/music/miragesong.mp3", "./resources/music/midsummerambient.mp3", "./resources/music/theend.mp3", "./resources/music/tropicice.mp3"]
+icemusic = ["./resources/music/arcticambient.mp3", "./resources/music/tropicice.mp3", "./resources/music/snowynight.mp3", "./resources/music/rainywindow.mp3", ]
 
 alltiles = pygame.sprite.Group()
 walls = pygame.sprite.Group()
@@ -60,7 +63,9 @@ floatys = pygame.sprite.Group()
 coingrp = pygame.sprite.Group()
 drains = pygame.sprite.Group()
 sharks = pygame.sprite.Group()
-alltiles, walls, floatys, coingrp, drains, sharks = maploader.loadmap(level)
+waterfalls = pygame.sprite.Group()
+grass = pygame.sprite.Group()
+alltiles, walls, floatys, coingrp, drains, sharks, waterfalls, grass = maploader.loadmap(level)
 
 boat = entities.Boat([360, 280])
 pebbles = pygame.sprite.Group()
@@ -68,20 +73,43 @@ ripples = pygame.sprite.Group()
 trails = pygame.sprite.Group()
 
 def loadLevel(level):
-    global boat, alltiles, walls, floatys, drains, startpos, collected, coingrp, sharks
-    alltiles = pygame.sprite.Group()
-    walls = pygame.sprite.Group()
-    floatys = pygame.sprite.Group()
-    coingrp = pygame.sprite.Group()
-    drains = pygame.sprite.Group()
-    sharks = pygame.sprite.Group()
-    alltiles, walls, floatys, coingrp, drains, sharks = maploader.loadmap(level)
-    boat.rect.center = startpos[level-1]
-    boat.coords = boat.rect.left, boat.rect.top
-    boat.reachedgate = False
-    collected = 0
-    boat.collected = 0
-    boat.health = 100
+    global boat, alltiles, walls, floatys, drains, startpos, collected, coingrp, sharks, grass, screen, grassmusic, desertmusic, icemusic
+    if level > 15:
+        screen = "menu"
+        pygame.mixer.music.stop()
+    else:
+        alltiles = pygame.sprite.Group()
+        walls = pygame.sprite.Group()
+        floatys = pygame.sprite.Group()
+        coingrp = pygame.sprite.Group()
+        drains = pygame.sprite.Group()
+        sharks = pygame.sprite.Group()
+        waterfalls = pygame.sprite.Group()
+        grass = pygame.sprite.Group()
+        alltiles, walls, floatys, coingrp, drains, sharks, waterfalls, grass = maploader.loadmap(level)
+        boat.rect.center = startpos[level-1]
+        boat.coords = boat.rect.left, boat.rect.top
+        boat.reachedgate = False
+        collected = 0
+        boat.collected = 0
+        boat.health = 100
+        if level < 7:
+            pygame.mixer.music.load(random.choice(grassmusic))
+        if level < 12 and level > 6:
+            pygame.mixer.music.load(random.choice(desertmusic))
+        if level > 11:
+            pygame.mixer.music.load(random.choice(icemusic))
+
+def loadmusic():
+    global level
+    if pygame.mixer.music.get_busy() == 0:
+        if level < 7:
+            pygame.mixer.music.load(random.choice(grassmusic))
+        if level < 12 and level > 6:
+            pygame.mixer.music.load(random.choice(desertmusic))
+        if level > 11:
+            pygame.mixer.music.load(random.choice(icemusic))
+        pygame.mixer.music.play()
 
 def newpebble():
     global mouse, npebble, pebbles, ripples, addedripples, pid
@@ -125,6 +153,15 @@ def infobox():
     ui.Text("health - " + str(boat.health) + "%", window, [15, 520])
     ui.Text("coins collected - " + str(collected), window, [15, 555])
 
+def updateall():
+    waterfalls.update(boat)
+    coingrp.update(boat)
+    floatys.update(boat)
+    drains.update(boat)
+    sharks.update(boat)
+    boat.update(walls, startpos[level - 1])
+    alltiles.update(boat)
+
 #GAME LOOP STUFF
 while running:
     for event in pygame.event.get():
@@ -139,6 +176,10 @@ while running:
                 if pressed[0] == 1:
                     if playbutton.click(mouse):
                         screen = "game"
+                        level = 1
+                        pygame.mixer.music.stop()
+                        loadLevel(level)
+                        pygame.mixer.music.play()
                         startclicked = True
                     elif quitbutton.click(mouse):
                         running = False
@@ -147,13 +188,18 @@ while running:
                     if nextbutton.click(mouse):
                         screen = "game"
                         level += 1
+                        pygame.mixer.music.stop()
                         loadLevel(level)
+                        pygame.mixer.music.play()
                     if replaybutton.click(mouse):
                         screen = "game"
+                        pygame.mixer.music.stop()
                         loadLevel(level)
+                        pygame.mixer.music.play()
                     if returnbutton.click(mouse):
                         screen = "menu"
                         level = 1
+                        pygame.mixer.music.stop()
             elif screen == "game" and not screen == "menu":
                 if pressed[0] == 1:
                     if not startclicked:
@@ -162,7 +208,7 @@ while running:
                         startclicked = False
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
-                running = False
+                boat.reachedgate = True
         elif event.type == pygame.USEREVENT + 1:
             ripples.update(boat, ripples)
             pebbles.update(boat)
@@ -181,28 +227,22 @@ while running:
     if screen == "menu":
         window.fill([255, 255, 255])
         menubuttons.draw(window)
+        pygame.mixer.music.stop()
     if screen == "game":
-        print(trails)
         collected = boat.collected
         window.fill([57, 119, 155])
         ripples.draw(window)
         alltiles.draw(window)
-        walls.draw(window)
-        pebbles.draw(window)
-        sharks.draw(window)
         boat.draw(window)
-        trails.draw(window)
+        grass.draw(window)
         infobox()
+        pebbles.draw(window)
+        updateall()
         hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
-        coingrp.update(boat)
-        floatys.update(boat)
-        drains.update(boat)
-        sharks.update(boat)
-        boat.update(walls, startpos[level-1])
-        alltiles.update(boat)
+        loadmusic()
         if boat.reachedgate:
             screen = "level complete"
-            boat.reachedgate=False
+            boat.reachedgate = False
             coins += collected
         if len(hits) > 0 and not boat.hitrock:
             for ripple in hits:
@@ -210,21 +250,17 @@ while running:
                 if not ripple.hit:
                     boat.accelerate(ripple, walls)
                 ripples.add(ripple)
+        if boat.health <= 0:
+            loadLevel(level)
     if screen == "level complete":
         window.fill([57, 119, 155])
         ripples.draw(window)
         alltiles.draw(window)
-        walls.draw(window)
-        pebbles.draw(window)
-        sharks.draw(window)
         boat.draw(window)
-        trails.draw(window)
+        grass.draw(window)
+        pebbles.draw(window)
+        updateall()
         hits = pygame.sprite.spritecollide(boat, ripples, False, pygame.sprite.collide_mask)
-        floatys.update(boat)
-        drains.update(boat)
-        sharks.update(boat)
-        boat.update(walls, startpos[level-1])
-        alltiles.update(boat)
         if len(hits) > 0:
             for ripple in hits:
                 ripple.kill()
@@ -233,6 +269,7 @@ while running:
                 ripples.add(ripple)
         levelcomplete()
 
+    print(level)
     pygame.display.flip()
 
 #CLOSE GAME STUFF
