@@ -23,13 +23,15 @@ pygame.time.set_timer(pygame.USEREVENT + 1, 40)
 pygame.time.set_timer(pygame.USEREVENT + 2, 500)
 
 #GAME SETUP STUFF
+ui.Color("w")
 menubuttons = pygame.sprite.Group()
-playbutton = ui.TextButton("Play", [400, 100], centered=True)
-quitbutton = ui.TextButton("Quit", [400, 150], centered=True)
+playbutton = ui.TextButton("play", [10, 100])
+howbutton = ui.TextButton("how to play", [10, 150])
+quitbutton = ui.TextButton("quit", [10, 200])
 menubuttons.add(playbutton)
+menubuttons.add(howbutton)
 menubuttons.add(quitbutton)
 completebuttons = pygame.sprite.Group()
-ui.Color("w")
 nextbutton = ui.TextButton("Next Level", [305, 275])
 replaybutton = ui.TextButton("Replay Level", [305, 300])
 returnbutton = ui.TextButton("Return to Menu", [305, 325])
@@ -65,7 +67,7 @@ drains = pygame.sprite.Group()
 sharks = pygame.sprite.Group()
 waterfalls = pygame.sprite.Group()
 grass = pygame.sprite.Group()
-alltiles, walls, floatys, coingrp, drains, sharks, waterfalls, grass = maploader.loadmap(level)
+alltiles, walls, floatys, coingrp, drains, sharks, waterfalls, grass = maploader.loadmap(random.randint(0, 15))
 
 boat = entities.Boat([360, 280])
 pebbles = pygame.sprite.Group()
@@ -141,7 +143,7 @@ def levelcomplete():
     surface.set_alpha(128)
     window.blit(surface, [300, 225])
     ui.SetFont("w", 28)
-    ui.Text("Level " + str(level) + " Complete!", window, [305, 225])
+    ui.Text("level " + str(level) + " complete!", window, [305, 225])
     completebuttons.draw(window)
 
 def infobox():
@@ -226,11 +228,21 @@ while running:
 
     if screen == "menu":
         window.fill([255, 255, 255])
+        window.fill([45, 124, 188])
+        ripples.draw(window)
+        alltiles.draw(window)
+        grass.draw(window)
+        pebbles.draw(window)
+        surface = pygame.surface.Surface([270, 600])
+        surface.set_alpha(127)
+        window.blit(surface, [0, 0])
+        ui.SetFont("w", 48)
+        ui.Text("calm waters", window, [10, 10])
         menubuttons.draw(window)
         pygame.mixer.music.stop()
     if screen == "game":
         collected = boat.collected
-        window.fill([57, 119, 155])
+        window.fill([45, 124, 188])
         ripples.draw(window)
         alltiles.draw(window)
         boat.draw(window)
@@ -253,7 +265,7 @@ while running:
         if boat.health <= 0:
             loadLevel(level)
     if screen == "level complete":
-        window.fill([57, 119, 155])
+        window.fill([45, 124, 188])
         ripples.draw(window)
         alltiles.draw(window)
         boat.draw(window)
